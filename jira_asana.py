@@ -26,8 +26,6 @@ JIRA_TRANSITION_ID = False
 # If set, JIRA_Task_USERNAME will get appended as asignee in this JQL
 JQL = 'issuetype in (standardIssueTypes(), Epic, "New Feature", Story) AND status in (Open, "In Progress", Reopened, "To Do", "In Review")'
 
-# "0/43e78cb5c25b050a73641e34ad3644f9"
-
 
 class JiraAsanaManager():
 	def __init__(self):
@@ -45,6 +43,8 @@ class JiraAsanaManager():
 		self.asana_workspace = ASANA_WORKSPACE
 		self.jira_sprint = JIRA_SPRINT
 		self.jira_transition_id = JIRA_TRANSITION_ID
+		self.jql = "%s AND assignee='%s'" % (JQL, self.jira_username)
+		print self.jql
 
 	def do_jira_request(self, url, data = "", request_type="get"):
 		"""
@@ -98,7 +98,7 @@ class JiraAsanaManager():
 
 		asana_tasks = [x for x in self.asana_client.tasks.find_all({ 'project': self.asana_project }, page_size=100, fields="completed,name,external")]
 		get_issues_url = self.base_jira_url + "/rest/agile/latest/board/%s/sprint/%s/issue" % (self.jira_board, self.jira_sprint)
-		response = self.do_jira_request(get_issues_url, data = { "jql": JQL, "fields": "summary" })
+		response = self.do_jira_request(get_issues_url, data = { "jql": self.jql, "fields": "summary" })
 		issues = [x for x in response['issues']]
 
 		# Need to get transition ID if we don't already have it
